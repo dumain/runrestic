@@ -1,0 +1,26 @@
+#!/bin/bash
+source /etc/restic.conf
+#Abandon the process on first failure
+set -e 
+export $(awk -F= '/^(RESTIC|AWS|ST|OS|B2|AZURE|GOOGLE|RCLONE)_[A-Z_]*=/{print $1}'</etc/restic.conf|grep -E -v '(_PASSWORD|^ST_KEY)$')
+#Make the backup
+function restic ()
+{
+	eval 'ionice -c Idle /usr/bin/restic' "$@"
+}
+
+function dobackups ()
+{
+	until restic backup --tag="${1}" -q -x ${FILESYSTEMS} 
+	do
+	        sleep 300
+	done
+	restic cache -q --cleanup
+}
+
+if [ -z "$1" ]
+then
+	dobackups "$(date +%F)"
+else
+	restic "$@"
+fi
