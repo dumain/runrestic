@@ -22,9 +22,9 @@ function dobackups ()
 	restic cache -q --cleanup
 }
 
-if [ -z "$1" ]
-then
-	dobackups "$(date +%F)"
-else
+case "$1" in
+    "")
+	dobackups "$(date +%F)";;
+    *)
 	restic "$@"
-fi
+esac
