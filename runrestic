@@ -8,10 +8,14 @@ function restic ()
 {
 	eval 'ionice -c Idle /usr/bin/restic' "$@"
 }
+function defaultfs ()
+{
+        findmnt -l -n -t nosquashfs --real -o TARGET,SOURCE|awk '/[^]]$/{print $1}'
+}
 
 function dobackups ()
 {
-	until restic backup --tag="${1}" -q -x ${FILESYSTEMS} 
+	until restic backup --tag="${1}" -q -x ${FILESYSTEMS:-$(defaultfs)} 
 	do
 	        sleep 300
 	done
