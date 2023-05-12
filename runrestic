@@ -13,6 +13,11 @@ function defaultfs ()
         findmnt -l -n -t nosquashfs --real -o TARGET,SOURCE|awk '/[^]]$/{print $1}'
 }
 
+function purge ()
+{
+    restic forget -q --prune --keep-within "${WITHIN:-48h}" -d "${DAILY:-7}" -w "${WEEKLY:-4}" -m "${MONTHLY:-12}" -y "${YEARLY:-100}"
+}
+
 function dobackups ()
 {
 	until restic backup --tag="${1}" -q -x ${FILESYSTEMS:-$(defaultfs)} 
@@ -25,6 +30,10 @@ function dobackups ()
 case "$1" in
     "")
 	dobackups "$(date +%F)";;
+    
+    CLEANUP)
+	purge;;
+    
     *)
-	restic "$@"
+	restic "$@";;
 esac
