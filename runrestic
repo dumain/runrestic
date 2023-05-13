@@ -20,11 +20,12 @@ function purge ()
 
 function dobackups ()
 {
-	until restic backup --tag="${1}" -q -x ${FILESYSTEMS:-$(defaultfs)} 
-	do
-	        sleep 300
-	done
-	restic cache -q --cleanup
+    until restic snapshots -H "$(hostname -s)"|awk '{print $5}'|grep "${1}" >/dev/null
+    do
+	restic backup --tag="${1}" -q -x ${FILESYSTEMS:-$(defaultfs)} 
+	sleep 300
+    done
+    restic cache -q --cleanup
 }
 
 case "$1" in
